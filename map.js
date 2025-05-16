@@ -9,58 +9,108 @@ console.log('Mapbox GL JS Loaded:', mapboxgl);
 // Set your Mapbox access token here
 mapboxgl.accessToken = 'pk.eyJ1IjoiY2F0MDE3dWNzZCIsImEiOiJjbWFyOWdtZzAwN3ljMm5vdHByYnNzM3o5In0.jD5q6AozmlKze4CiYfldbg';
 
-// Initialize the map
-const map = new mapboxgl.Map({
-    container: 'map', // ID of the div where the map will render
-    style: 'mapbox://styles/cat017ucsd/cmarbna0401g501spg9f7a09k', // Map style
-    center: [-71.09415, 42.36027], // [longitude, latitude]
-    zoom: 12, // Initial zoom level
-    minZoom: 5, // Minimum allowed zoom
-    maxZoom: 18, // Maximum allowed zoom
-});
+let map;
+
+let city = 'Chicago';
+const map_style = 'mapbox://styles/cat017ucsd/cmarbna0401g501spg9f7a09k';
+const initial_zoom = 12;
+const min_zoom = 5;
+const max_zoom = 18;
+
+if (city === 'Boston') {
+    map = new mapboxgl.Map({
+        container: 'map', // ID of the div where the map will render
+        style: map_style,
+        center: [-71.09415, 42.36027], // [longitude, latitude]
+        zoom: initial_zoom, // Initial zoom level
+        minZoom: min_zoom, // Minimum allowed zoom
+        maxZoom: max_zoom, // Maximum allowed zoom
+    });
+} else if (city === 'Chicago') {
+    map = new mapboxgl.Map({
+        container: 'map', // ID of the div where the map will render
+        style: map_style,
+        center: [-87.60039530235866, 41.79060835668532], // [longitude, latitude]
+        zoom: initial_zoom, // Initial zoom level
+        minZoom: min_zoom, // Minimum allowed zoom
+        maxZoom: max_zoom, // Maximum allowed zoom
+    });
+}
 
 map.on('load', async () => {
-    map.addSource('boston_route', {
-        type: 'geojson',
-        data: 'https://bostonopendata-boston.opendata.arcgis.com/datasets/boston::existing-bike-network-2022.geojson',
-    });
-    map.addSource('cambridge_route', {
-        type: 'geojson',
-        data: 'https://raw.githubusercontent.com/cambridgegis/cambridgegis_data/main/Recreation/Bike_Facilities/RECREATION_BikeFacilities.geojson',
-    });
-    map.addLayer({
-        id: 'bike-lanes-boston',
-        type: 'line',
-        source: 'boston_route',
-        paint: {
-            'line-color': 'green',
-            'line-width': 3,
-            'line-opacity': 0.6,
-        },
-    });
-    map.addLayer({
-        id: 'bike-lanes-cambridge',
-        type: 'line',
-        source: 'cambridge_route',
-        paint: {
-            'line-color': 'green',
-            'line-width': 3,
-            'line-opacity': 0.6,
-        },
-    });
+    let jsonData;
+    let trips;
+    if (city === 'Boston') {
+        map.addSource('boston_route', {
+            type: 'geojson',
+            data: 'https://bostonopendata-boston.opendata.arcgis.com/datasets/boston::existing-bike-network-2022.geojson',
+        });
+        map.addSource('cambridge_route', {
+            type: 'geojson',
+            data: 'https://raw.githubusercontent.com/cambridgegis/cambridgegis_data/main/Recreation/Bike_Facilities/RECREATION_BikeFacilities.geojson',
+        });
+        map.addLayer({
+            id: 'bike-lanes-boston',
+            type: 'line',
+            source: 'boston_route',
+            paint: {
+                'line-color': 'green',
+                'line-width': 3,
+                'line-opacity': 0.6,
+            },
+        });
+        map.addLayer({
+            id: 'bike-lanes-cambridge',
+            type: 'line',
+            source: 'cambridge_route',
+            paint: {
+                'line-color': 'green',
+                'line-width': 3,
+                'line-opacity': 0.6,
+            },
+        });
 
-    // Bluebikes data
-    const jsonurl = "https://dsc106.com/labs/lab07/data/bluebikes-stations.json";
-    let jsonData = await d3.json(jsonurl);
-    const tripsurl = "https://dsc106.com/labs/lab07/data/bluebikes-traffic-2024-03.csv";
-    const trips = await d3.csv(
-        tripsurl,
-        (trip) => {
-            trip.started_at = new Date(trip.started_at);
-            trip.ended_at = new Date(trip.ended_at);
-            return trip;
-        },
-    );
+        // Bluebikes data
+        const jsonurl = "https://dsc106.com/labs/lab07/data/bluebikes-stations.json";
+        jsonData = await d3.json(jsonurl);
+        const tripsurl = "https://dsc106.com/labs/lab07/data/bluebikes-traffic-2024-03.csv";
+        trips = await d3.csv(
+            tripsurl,
+            (trip) => {
+                trip.started_at = new Date(trip.started_at);
+                trip.ended_at = new Date(trip.ended_at);
+                return trip;
+            },
+        );
+    } else if (city === 'Chicago') {
+        map.addSource('chicago_route', {
+            type: 'geojson',
+            data: 'https://data.cityofchicago.org/resource/hvv9-38ut.geojson',
+        });
+        map.addLayer({
+            id: 'bike-lanes-chicago',
+            type: 'line',
+            source: 'chicago_route',
+            paint: {
+                'line-color': 'green',
+                'line-width': 3,
+                'line-opacity': 0.6,
+            },
+        });
+
+        // Divvy data
+        const jsonurl = "https://gbfs.lyft.com/gbfs/2.3/chi/en/station_information.json";
+        jsonData = await d3.json(jsonurl);
+        const tripsurl = "assets/divvy_subset.csv";
+        trips = await d3.csv(
+            tripsurl,
+            (trip) => {
+                trip.started_at = new Date(trip.started_at);
+                trip.ended_at = new Date(trip.ended_at);
+                return trip;
+            },
+        );
+    }
     const stations = computeStationTraffic(jsonData.data.stations, trips);
 
     function getCoords(station) {
