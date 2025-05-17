@@ -26,7 +26,7 @@ const cityConfigs = {
     'Boston': {
         center: [-71.09415, 42.36027],
         jsonDataUrl: "https://dsc106.com/labs/lab07/data/bluebikes-stations.json",
-        tripsUrl: "https://dsc106.com/labs/lab07/data/bluebikes-traffic-2024-03.csv",
+        tripsUrl: "assets/bluebike_subset.csv",
         routes: [
             {
                 id: 'boston_route',
