@@ -17,11 +17,21 @@
 
 <body>
     <h1>🚴🏼‍♀️ Bikewatching</h1>
-    <label>Filter by time:
-        <input id="time-slider" type="range" min="-1" max="1440">
-        <em id="any-time">(any time)</em>
-        <time id="selected-time"></time>
-    </label>
+    
+    <div class="controls">
+        <label>City: 
+            <select id="city-selector">
+                <option value="Chicago">Chicago</option>
+                <option value="Boston">Boston</option>
+            </select>
+        </label>
+        
+        <label>Filter by time:
+            <input id="time-slider" type="range" min="-1" max="1440">
+            <em id="any-time">(any time)</em>
+            <time id="selected-time"></time>
+        </label>
+    </div>
 
     <div id="map">
         <svg></svg>
